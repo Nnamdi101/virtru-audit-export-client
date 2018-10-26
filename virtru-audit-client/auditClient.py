@@ -38,9 +38,10 @@ class AuditClient:
 
     def __generateVjwtString(self, req):
         tokenSecret = base64.b64decode(self.apiTokenSecret)
+        queryKeys = req['query'].keys()
         method = req['method']
 
-        queryParams = self.__generateQueryParams(req['query'])
+        queryParams = self.__generateQueryParams(req['query'], queryKeys)
         nonce = self.__generateNonce()
 
         payload = {
@@ -48,15 +49,18 @@ class AuditClient:
             'iat': int(time.time()),
             'jti': nonce,
             'rsha': self.__generateRsha(method, self.apiHost, self.apiPath, queryParams),
-            'rqps': ','.join(req['query'].keys()),
+            'rqps': ','.join(queryKeys),
             'exp': int(time.time()+VJWT_TTL_SECONDS)
         }
         return jwt.encode(payload, tokenSecret, algorithm='HS256')
 
-    def __generateQueryParams(self, query):
+    def __generateQueryParams(self, query, keys):
         result = ''
-        for key, value in query.items():
-            result = result+"%s=%s" % (key, value)
+        for key in keys:
+            result = result+'%s=%s' % (key, query[key])
+
+            # for key, value in query.items():
+            #     result = result+"%s=%s" % (key, value)
         return result
 
     def __generateNonce(self, length=8):
