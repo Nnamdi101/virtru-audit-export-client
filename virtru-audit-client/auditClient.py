@@ -7,7 +7,7 @@ import time
 import sys
 import logging
 
-VJWT_TTL_SECONDS = 60.0
+VJWT_TTL_SECONDS = 300.0
 
 
 class AuditClient:
